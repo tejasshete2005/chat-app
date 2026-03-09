@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — ChatWave</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="auth-page">
+        <div class="auth-card profile-card">
+            
+            <a href="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Chat</a>
+
+            <div class="profile-header">
+                <div class="avatar lg" id="profileAvatar">
+                    <% if (currentUser.avatar) { %>
+                        <img src="<%= currentUser.avatar %>" alt="Profile Avatar" id="avatarImg">
+                    <% } else { %>
+                        <%= currentUser.username.charAt(0).toUpperCase() %>
+                    <% } %>
+                    <label for="avatarInput" class="avatar-edit-overlay">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                </div>
+                <h2><%= currentUser.username %></h2>
+                <p class="subtitle"><%= currentUser.email %></p>
+            </div>
+
+            <form action="/profile/update" method="POST" enctype="multipart/form-data" id="profileForm">
+                <input type="file" name="avatar" id="avatarInput" accept="image/*" hidden>
+                
+                <div class="form-section">
+                    <h3>Account Settings</h3>
+                    <p class="subtitle">Update your profile information and picture</p>
+                    
+                    <div id="uploadStatus" class="flash-messages hidden"></div>
+
+                    <button type="button" class="btn-primary" onclick="document.getElementById('avatarInput').click()">
+                        <i class="fa-solid fa-image"></i> Change Profile Picture
+                    </button>
+                    
+                    <div id="selectedInfo" class="selected-info hidden">
+                        <p id="fileName"></p>
+                        <button type="submit" class="btn-primary" id="updateBtn">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="danger-zone">
+                <a href="/logout" class="btn-logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Sign Out
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const avatarInput = document.getElementById('avatarInput');
+        const fileNameDisp = document.getElementById('fileName');
+        const selectedInfo = document.getElementById('selectedInfo');
+        const updateBtn = document.getElementById('updateBtn');
+
+        avatarInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                fileNameDisp.textContent = `Selected: ${file.name}`;
+                selectedInfo.classList.remove('hidden');
+                
+                // Show preview if possible
+                const reader = new FileReader();
+                reader.onload = function(re) {
+                    const avatarDiv = document.getElementById('profileAvatar');
+                    const img = document.getElementById('avatarImg');
+                    if (img) {
+                        img.src = re.target.result;
+                    } else {
+                        avatarDiv.innerHTML = `<img src="${re.target.result}" id="avatarImg" alt="Profile Avatar">
+                                              <label for="avatarInput" class="avatar-edit-overlay"><i class="fa-solid fa-camera"></i></label>`;
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', function() {
+            updateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+            updateBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up — ChatWave</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="logo-icon">💬</div>
+      <span>ChatWave</span>
+    </div>
+
+    <h2>Create account</h2>
+    <p class="subtitle">Join the conversation — it's free</p>
+
+    <% if (errors && errors.length > 0) { %>
+    <div class="flash-messages">
+      <% errors.forEach(err => { %>
+        <div class="flash-error"><i class="fa-solid fa-circle-exclamation"></i> <%= err %></div>
+      <% }) %>
+    </div>
+    <% } %>
+
+    <form action="/signup" method="POST" id="signupForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="username" name="username" placeholder="Choose a username" required minlength="3" autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="password" name="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-shield-halved"></i>
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repeat your password" required minlength="6" autocomplete="new-password" />
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" id="signupBtn">
+        <span>Create Account</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="/login">Sign in →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('signupForm').addEventListener('submit', function(e) {
+    const pwd = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (pwd !== confirm) {
+      e.preventDefault();
+      alert('Passwords do not match!');
+      return;
+    }
+    const btn = document.getElementById('signupBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account...';
+    btn.disabled = true;
+  });
+</script>
+
+</body>
+</html>

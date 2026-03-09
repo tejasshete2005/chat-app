@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — ChatWave</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="logo-icon">💬</div>
+      <span>ChatWave</span>
+    </div>
+
+    <h2>Welcome back</h2>
+    <p class="subtitle">Sign in to continue your conversations</p>
+
+    <% if (errors && errors.length > 0) { %>
+    <div class="flash-messages">
+      <% errors.forEach(err => { %>
+        <div class="flash-error"><i class="fa-solid fa-circle-exclamation"></i> <%= err %></div>
+      <% }) %>
+    </div>
+    <% } %>
+
+    <% if (success && success.length > 0) { %>
+    <div class="flash-messages">
+      <% success.forEach(msg => { %>
+        <div class="flash-success"><i class="fa-solid fa-circle-check"></i> <%= msg %></div>
+      <% }) %>
+    </div>
+    <% } %>
+
+    <form action="/login" method="POST" id="loginForm">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password" />
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" id="loginBtn">
+        <span>Sign In</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/signup">Create one →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+    btn.disabled = true;
+  });
+</script>
+
+</body>
+</html>
