@@ -38,26 +38,31 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- Session ---
-// --- Session ---
 let store;
-if (process.env.MONGO_URI) {
-  // connect-mongo v4+ uses .create(), but we add a fallback just in case
-  const storeOptions = {
-    mongoUrl: process.env.MONGO_URI,
-    crypto: {
-      secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
-    },
-    touchAfter: 24 * 3600,
-  };
-  
-  store = (typeof MongoStore.create === 'function') 
-    ? MongoStore.create(storeOptions)
-    : new MongoStore(storeOptions);
+try {
+  if (process.env.MONGO_URI) {
+    const storeOptions = {
+      mongoUrl: process.env.MONGO_URI,
+      crypto: {
+        secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
+      },
+      touchAfter: 24 * 3600,
+    };
+    
+    // Attempt to create the store with various import patterns
+    if (typeof MongoStore.create === 'function') {
+      store = MongoStore.create(storeOptions);
+    } else if (typeof MongoStore === 'function') {
+      store = new MongoStore(storeOptions);
+    }
+  }
+} catch (err) {
+  console.error("Failed to initialize MongoStore:", err);
 }
 
 app.use(
   session({
-    store: store,
+    store: store, // Defaults to MemoryStore if store is undefined
     secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024",
     resave: false,
     saveUninitialized: false,
