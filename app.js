@@ -38,21 +38,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- Session ---
-// const store = MongoStore.create({
-//   mongoUrl: process.env.MONGO_URI,
-//   crypto: {
-//     secret: process.env.SESSION_SECRET
-//   },
-//   touchAfter: 24 * 3600,
-// })
+const store = MongoStore.create({
+  mongoUrl: process.env.MONGO_URI,
+  crypto: {
+    secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
+  },
+  touchAfter: 24 * 3600,
+})
 
-// store.on("error", () => {
-//   console.log("ERROR in MONGO SESSION STORE", err);
-// });
+store.on("error", (err) => {
+  console.log("ERROR in MONGO SESSION STORE", err);
+});
 
 app.use(
   session({
-    // store,
+    store,
     secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024",
     resave: false,
     saveUninitialized: false,
@@ -73,17 +73,15 @@ app.use((req, res, next) => {
 
 // --- Multer (file uploads) ---
 const uploadsDir = path.join(__dirname, "public", "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn("⚠️  Warning: Could not create uploads directory. This is expected on read-only systems like Vercel. Ensure you use cloud storage for production.");
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -100,10 +98,18 @@ const upload = multer({
 });
 
 // --- DB ---
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ DB Error:", err));
+if (!process.env.MONGO_URI) {
+  console.error("❌ Error: MONGO_URI is not defined. Please add it to your environment variables.");
+} else {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch((err) => {
+      console.error("❌ DB Connection Error:", err.message);
+      // In production/Vercel, we might want to log this but keep the process alive 
+      // so other non-DB routes can still potentially work, though unlikely for this app.
+    });
+}
 
 // --- Routes ---
 app.use("/", authRoutes);
@@ -376,7 +382,8 @@ io.on("connection", (socket) => {
 });
 
 // --- Start Server ---
-const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
+module.exports = app;
