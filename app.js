@@ -7,6 +7,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const session = require("express-session");
+const MongoStore=require('connect-mongo');
 const flash = require("connect-flash");
 const multer = require("multer");
 const fs = require("fs");
@@ -37,14 +38,29 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- Session ---
+// const store = MongoStore.create({
+//   mongoUrl: process.env.MONGO_URI,
+//   crypto: {
+//     secret: process.env.SESSION_SECRET
+//   },
+//   touchAfter: 24 * 3600,
+// })
+
+// store.on("error", () => {
+//   console.log("ERROR in MONGO SESSION STORE", err);
+// });
+
 app.use(
   session({
+    // store,
     secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024",
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
   })
 );
+
+
 
 // --- Flash ---
 app.use(flash());
