@@ -7,7 +7,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const session = require("express-session");
-const MongoStore=require('connect-mongo');
+const MongoStore = require('connect-mongo').default || require('connect-mongo');
 const flash = require("connect-flash");
 const multer = require("multer");
 const fs = require("fs");
@@ -38,15 +38,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- Session ---
+// --- Session ---
 let store;
 if (process.env.MONGO_URI) {
-  store = MongoStore.create({
+  // connect-mongo v4+ uses .create(), but we add a fallback just in case
+  const storeOptions = {
     mongoUrl: process.env.MONGO_URI,
     crypto: {
       secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
     },
     touchAfter: 24 * 3600,
-  });
+  };
+  
+  store = (typeof MongoStore.create === 'function') 
+    ? MongoStore.create(storeOptions)
+    : new MongoStore(storeOptions);
 }
 
 app.use(
