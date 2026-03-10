@@ -127,16 +127,26 @@ app.use("/api/chats", chatRoutes);
 
 // Home → Chat Dashboard
 app.get("/", isAuthenticated, async (req, res) => {
-  // Fetch all registered users to start private chats
-  const allUsers = await User.find({ _id: { $ne: req.session.user._id } })
-                             .select("-password").sort({ username: 1 });
-  
-  // We'll fetch active chats dynamically on the client
-  res.render("chat", {
-    allUsers,
-    currentUser: req.session.user,
-    room: null,
-  });
+  try {
+    // Fetch all registered users to start private chats
+    const allUsers = await User.find({ _id: { $ne: req.session.user._id } })
+                               .select("-password").sort({ username: 1 });
+    
+    // We'll fetch active chats dynamically on the client
+    res.render("chat", {
+      allUsers,
+      currentUser: req.session.user,
+      room: null,
+    });
+  } catch (err) {
+    console.error("Home route error:", err);
+    res.render("chat", {
+      allUsers: [],
+      currentUser: req.session.user,
+      room: null,
+      error: "Database connection failed. Please try again later."
+    });
+  }
 });
 
 // Media upload endpoint -> requires chatId now
