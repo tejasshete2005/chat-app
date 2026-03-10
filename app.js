@@ -117,16 +117,17 @@ if (!process.env.MONGO_URI) {
 
   mongoose
     .connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000, 
-      connectTimeoutMS: 10000,
+      dbName: 'test', // Replace with your actual DB name if different
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      family: 4 // Force IPv4 (important for some Vercel regions)
     })
     .then(() => console.log("✅ MongoDB Connected Successfully"))
     .catch((err) => {
       console.error("❌ DB Connection Error details:");
       console.error("- Message:", err.message);
-      console.error("- Code:", err.code);
-      if (err.message.includes("SSL alert number 80")) {
-        console.error("💡 Hint: SSL Alert 80 usually means your IP is not whitelisted in MongoDB Atlas or your password contains special characters that need encoding.");
+      if (err.message.includes("SSL alert number 80") || err.message.includes("IP that isn't whitelisted")) {
+        console.error("💡 SOLUTION: Go to MongoDB Atlas -> Network Access -> Add '0.0.0.0/0'. Also, ensure your password has NO symbols (only letters/numbers).");
       }
     });
 }
