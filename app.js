@@ -39,29 +39,19 @@ app.use(express.json());
 
 // --- Session ---
 let store;
-try {
-  if (process.env.MONGO_URI) {
-    store = MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      crypto: {
-        secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
-      },
-      touchAfter: 24 * 3600,
-    });
-
-    store.on("error", (err) => {
-      console.log("ERROR in MONGO SESSION STORE", err);
-    });
-  } else {
-    console.warn("⚠️ Warning: MONGO_URI not found. Sessions will be stored in memory (non-persistent).");
-  }
-} catch (err) {
-  console.error("❌ Session Store Error:", err.message);
+if (process.env.MONGO_URI) {
+  store = MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    crypto: {
+      secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
+    },
+    touchAfter: 24 * 3600,
+  });
 }
 
 app.use(
   session({
-    store: store || null, // fallback to MemoryStore if store fails
+    store: store,
     secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024",
     resave: false,
     saveUninitialized: false,
@@ -391,8 +381,11 @@ io.on("connection", (socket) => {
 });
 
 // --- Start Server ---
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== 'production') {
+  server.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
+}
 
 module.exports = app;
