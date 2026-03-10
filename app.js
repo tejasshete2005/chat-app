@@ -38,21 +38,30 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- Session ---
-const store = MongoStore.create({
-  mongoUrl: process.env.MONGO_URI,
-  crypto: {
-    secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
-  },
-  touchAfter: 24 * 3600,
-})
+let store;
+try {
+  if (process.env.MONGO_URI) {
+    store = MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      crypto: {
+        secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024"
+      },
+      touchAfter: 24 * 3600,
+    });
 
-store.on("error", (err) => {
-  console.log("ERROR in MONGO SESSION STORE", err);
-});
+    store.on("error", (err) => {
+      console.log("ERROR in MONGO SESSION STORE", err);
+    });
+  } else {
+    console.warn("⚠️ Warning: MONGO_URI not found. Sessions will be stored in memory (non-persistent).");
+  }
+} catch (err) {
+  console.error("❌ Session Store Error:", err.message);
+}
 
 app.use(
   session({
-    store,
+    store: store || null, // fallback to MemoryStore if store fails
     secret: process.env.SESSION_SECRET || "chatapp_secret_key_2024",
     resave: false,
     saveUninitialized: false,

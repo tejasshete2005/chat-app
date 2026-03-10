@@ -7,12 +7,7 @@ const path = require("path");
 const { isAuthenticated } = require("../middleware/auth");
 
 // Multer setup for avatar
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "public/uploads"),
-  filename: (req, file, cb) => {
-    cb(null, `avatar-${Date.now()}${path.extname(file.originalname)}`);
-  },
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // GET /signup
