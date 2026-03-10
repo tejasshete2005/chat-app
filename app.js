@@ -109,15 +109,25 @@ const upload = multer({
 
 // --- DB ---
 if (!process.env.MONGO_URI) {
-  console.error("❌ Error: MONGO_URI is not defined. Please add it to your environment variables.");
+  console.error("❌ Error: MONGO_URI is not defined in environment variables.");
 } else {
+  // Debug: Log the URI (hiding password) to verify it's being read correctly
+  const maskedUri = process.env.MONGO_URI.replace(/:([^:@]{1,})@/, ':****@');
+  console.log(`📡 Attempting to connect to: ${maskedUri}`);
+
   mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
+    .connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000, 
+      connectTimeoutMS: 10000,
+    })
+    .then(() => console.log("✅ MongoDB Connected Successfully"))
     .catch((err) => {
-      console.error("❌ DB Connection Error:", err.message);
-      // In production/Vercel, we might want to log this but keep the process alive 
-      // so other non-DB routes can still potentially work, though unlikely for this app.
+      console.error("❌ DB Connection Error details:");
+      console.error("- Message:", err.message);
+      console.error("- Code:", err.code);
+      if (err.message.includes("SSL alert number 80")) {
+        console.error("💡 Hint: SSL Alert 80 usually means your IP is not whitelisted in MongoDB Atlas or your password contains special characters that need encoding.");
+      }
     });
 }
 
